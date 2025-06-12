@@ -1,0 +1,20 @@
+---
+- name: Check Podman and root
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Get current user
+      ansible.builtin.command: whoami
+      register: whoami_result
+      changed_when: false
+
+    - name: Check if podman is installed
+      ansible.builtin.command: podman --version
+      register: podman_check
+      changed_when: false
+
+    - name: Fail if podman is not installed
+      ansible.builtin.fail:
+        msg: "Podman is not installed. Please install podman before proceeding."
+      when: podman_check.rc != 0

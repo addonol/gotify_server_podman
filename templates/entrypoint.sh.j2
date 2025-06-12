@@ -1,0 +1,7 @@
+#!/bin/sh
+
+if [ -f /run/secrets/gotify_server_admin_pass ]; then
+    export GOTIFY_DEFAULTUSER_PASS=$(cat /run/secrets/gotify_server_admin_pass)
+fi
+
+exec "{{ gotify_server_podman_binary_path }}"

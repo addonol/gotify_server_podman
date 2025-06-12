@@ -1,0 +1,12 @@
+---
+- name: Manage Gotify Server resource
+  hosts: "{{ target | default('all') }}"
+  vars:
+    gotify_server_podman_port_number: 8082
+    gotify_server_podman_timezone: "Europe/Brussels"
+    gotify_server_podman_custom_image: "custom/gotify-server:latest"
+    gotify_server_podman_image: "docker.io/gotify/server:latest"
+    gotify_server_podman_volume_name: "gotify_server_data"
+    gotify_server_podman_container_name: "gotify-server"
+  roles:
+    - role: .

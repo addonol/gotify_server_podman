@@ -1,0 +1,4 @@
+FROM  {{ gotify_server_podman_image }}
+
+COPY entrypoint.sh /entrypoint.sh
+ENTRYPOINT ["/entrypoint.sh"]

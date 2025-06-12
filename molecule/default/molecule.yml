@@ -1,0 +1,33 @@
+---
+dependency:
+  name: galaxy
+
+driver:
+  name: podman
+
+platforms:
+  - name: instance-ubuntu22.04
+    dockerfile: Containerfile.ubuntu
+    image: ubuntu22.04-python3-custom
+    build_image: true
+    pre_build_image: false
+    user: root
+    privileged: true
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:ro
+    cgroup_manager: cgroupfs
+
+provisioner:
+  name: ansible
+
+verifier:
+  name: ansible
+
+scenario:
+  test_sequence:
+    - syntax
+    - create
+    - prepare
+    - converge
+    - idempotence
+    - destroy

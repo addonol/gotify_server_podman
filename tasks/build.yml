@@ -1,0 +1,96 @@
+---
+- name: Gather fact for the current task
+  ansible.builtin.set_fact:
+    current_task: "Deploy Gotify Server resources"
+  tags: build
+
+- name: Install and configure Gotify server
+  tags: build
+  block:
+    - name: Generate a random admin password for this run
+      ansible.builtin.set_fact:
+        generated_password: "{{ lookup('ansible.builtin.password', '/dev/null', \
+          chars='abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-$!', \
+          length=12) }}"
+
+    - name: Remove old podman secret if exists
+      containers.podman.podman_secret:
+        state: absent
+        name: gotify_server_admin_pass
+
+    - name: Create podman secret for admin password
+      containers.podman.podman_secret:
+        state: present
+        name: gotify_server_admin_pass
+        data: "{{ generated_password }}"
+      changed_when: false
+
+    - name: Remove old container if exists
+      containers.podman.podman_container:
+        name: "{{ gotify_server_podman_container_name }}"
+        state: absent
+      register: remove_result
+      failed_when: false
+
+    - name: Ensure Podman volume exists
+      containers.podman.podman_volume:
+        name: "{{ gotify_server_podman_volume_name }}"
+        state: present
+      changed_when: false
+
+    - name: Ensure build context directory exists
+      ansible.builtin.file:
+        path: "{{ gotify_server_podman_build_dir }}"
+        state: directory
+        mode: '0755'
+
+    - name: Template Containerfile
+      ansible.builtin.template:
+        src: Containerfile.j2
+        dest: "{{ gotify_server_podman_build_dir }}/Containerfile"
+        mode: '0644'
+
+    - name: Template entrypoint script
+      ansible.builtin.template:
+        src: entrypoint.sh.j2
+        dest: "{{ gotify_server_podman_build_dir }}/entrypoint.sh"
+        mode: '0755'
+
+    - name: Build image with host networking using command
+      ansible.builtin.command:
+        cmd: |
+          podman build --network=host -t "{{ gotify_server_podman_custom_image }}" "{{ gotify_server_podman_build_dir }}"
+      changed_when: false
+
+    - name: Run container with Podman secret
+      containers.podman.podman_container:
+        name: "{{ gotify_server_podman_container_name }}"
+        image: "{{ gotify_server_podman_custom_image }}"
+        state: started
+        restart_policy: always
+        env:
+          GOTIFY_DATABASE_DIALECT: sqlite3
+          GOTIFY_DATABASE_CONNECTION: data/gotify.db
+          GOTIFY_DEFAULTUSER_NAME: admin
+          GOTIFY_UPLOADEDIMAGESDIR: data/images
+          GOTIFY_PLUGINSDIR: data/plugins
+          TZ: "{{ gotify_server_podman_timezone }}"
+        ports:
+          - "{{ gotify_server_podman_port_number }}:80"
+        secrets:
+          - gotify_server_admin_pass
+        volumes:
+          - "{{ gotify_server_podman_volume_name }}:/app/data"
+      register: podman_container_result
+      until: podman_container_result is succeeded
+      retries: 5
+      delay: 10
+      changed_when: false
+
+    - name: Show admin password
+      ansible.builtin.debug:
+        msg: "Gotify Server admin password: {{ generated_password }}"
+
+  rescue:
+    - name: Clean up after failed build
+      ansible.builtin.include_tasks: clean.yml

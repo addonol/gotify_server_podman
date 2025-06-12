@@ -1,0 +1,12 @@
+---
+- name: Converge
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Ensure pytz is installed
+      ansible.builtin.pip:
+        name: pytz
+        executable: pip3
+
+- name: Run playbook
+  import_playbook: ../../playbook.yml

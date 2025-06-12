@@ -1,0 +1,21 @@
+# -----------------------------------------------------------------------------
+# Image Configuration
+# -----------------------------------------------------------------------------
+gotify_server_podman_image: "docker.io/gotify/server:latest"
+gotify_server_podman_custom_image: "custom/gotify-server:latest"
+gotify_server_podman_build_dir: "/tmp/gotify_server_build"
+
+# -----------------------------------------------------------------------------
+# Application Settings
+# -----------------------------------------------------------------------------
+gotify_server_podman_admin_user: "admin"
+gotify_server_podman_binary_path: "/app/gotify-app"
+gotify_server_podman_port_number: 8080
+gotify_server_podman_timezone: "Europe/Brussels"
+
+# -----------------------------------------------------------------------------
+# Data & Container Settings
+# -----------------------------------------------------------------------------
+gotify_server_podman_data_dir: "/opt/gotify_server_data"
+gotify_server_podman_volume_name: "gotify_server_data"
+gotify_server_podman_container_name: "gotify-server"

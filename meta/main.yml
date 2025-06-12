@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: MIT-0
+galaxy_info:
+  description: Deploy Gotify Server with Podman using Ansible
+  namespace: addonol
+  author: addonol
+  role_name: gotify_server_podman
+  license: MIT
+  min_ansible_version: ">=2.18.0"
+  galaxy_tags: []
+  platforms:
+    - name: Ubuntu
+      versions:
+        - 'all'
+dependencies: []

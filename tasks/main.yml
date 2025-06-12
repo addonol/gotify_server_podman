@@ -1,0 +1,20 @@
+---
+- name: Clean Gotify Server resources
+  ansible.builtin.include_tasks: clean.yml
+  tags:
+    - clean
+
+- name: Install and configure Gotify server
+  ansible.builtin.include_tasks: build.yml
+  tags:
+    - build
+
+- name: Restart Gotify container
+  ansible.builtin.include_tasks: restart.yml
+  tags:
+    - restart
+
+- name: Stop Gotify container
+  ansible.builtin.include_tasks: stop.yml
+  tags:
+    - stop

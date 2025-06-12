@@ -1,0 +1,41 @@
+---
+- name: Gather fact for the current task
+  ansible.builtin.set_fact:
+    current_task: "Clean Gotify Server resources"
+  tags: clean
+
+- name: Clean Gotify Server resources
+  tags: clean
+  block:
+    - name: Remove Gotify container
+      containers.podman.podman_container:
+        name: "{{ gotify_server_podman_container_name }}"
+        state: absent
+      changed_when: false
+
+    - name: Remove admin password secret
+      containers.podman.podman_secret:
+        name: gotify_server_admin_pass
+        state: absent
+      changed_when: false
+
+    - name: Remove data volume
+      containers.podman.podman_volume:
+        name: "{{ gotify_server_podman_volume_name }}"
+        state: absent
+      changed_when: false
+
+    - name: Remove custom image
+      containers.podman.podman_image:
+        name: "{{ gotify_server_podman_custom_image }}:latest"
+        state: absent
+
+    - name: Remove original Gotify image
+      containers.podman.podman_image:
+        name: "{{ gotify_server_podman_image }}"
+        state: absent
+      when: gotify_server_server_podman_image is defined
+
+  rescue:
+    - name: Stop further tasks on this host after cleaning failure
+      ansible.builtin.meta: end_host

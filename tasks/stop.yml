@@ -1,0 +1,18 @@
+---
+- name: Gather fact for the current task
+  ansible.builtin.set_fact:
+    current_task: "Deploy Gotify resources"
+  tags: stop
+
+- name: Stop Gotify container
+  tags: stop
+  block:
+    - name: Stop Gotify container
+      containers.podman.podman_container:
+        name: "{{ gotify_server_podman_container_name }}"
+        state: stopped
+      changed_when: false
+
+  rescue:
+    - name: Stop further tasks on this host after stopping failure
+      ansible.builtin.meta: end_host

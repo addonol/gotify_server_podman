@@ -1,0 +1,21 @@
+---
+- name: Gather fact for the current task
+  ansible.builtin.set_fact:
+    current_task: "Restart Gotify container"
+  tags: restart
+
+- name: Restart Gotify container
+  tags: restart
+  block:
+    - name: Restart Gotify container
+      containers.podman.podman_container:
+        name: "{{ gotify_server_podman_container_name }}"
+        state: started
+        force_restart: true
+      register: restart_result
+      failed_when: restart_result.failed | default(false)
+      changed_when: false
+
+  rescue:
+    - name: Stop further tasks on this host after restarting failure
+      ansible.builtin.meta: end_host
